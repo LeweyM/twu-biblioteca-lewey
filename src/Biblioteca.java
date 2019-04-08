@@ -79,7 +79,6 @@ public class Biblioteca {
         }
     }
 
-
     private void checkoutById() throws IOException {
         printer.printCheckoutByIdInstructions();
         Book book = findBookById(getUserInputNumber());

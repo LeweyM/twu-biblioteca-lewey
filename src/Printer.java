@@ -5,8 +5,8 @@ public class Printer {
 
     PrintStream out;
 
-    public Printer(PrintStream baos) {
-        this.out = baos;
+    public Printer(PrintStream printStream) {
+        this.out = printStream;
     }
 
 

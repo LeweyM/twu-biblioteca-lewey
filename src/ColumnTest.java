@@ -10,7 +10,7 @@ public class ColumnTest {
     public void addLineShouldReturnSpacedStringWithNewLine() {
         Column column = new Column();
         column.addLine("1", "2", "3");
-        assertThat(column.getString(), is("1 2 3\n"));
+        assertThat(column.getString(), is("1 | 2 | 3\n"));
     }
 
     @Test
@@ -18,6 +18,6 @@ public class ColumnTest {
         Column column = new Column();
         column.addLine("1", "2", "3");
         column.addLine("one", "two", "three");
-        assertThat(column.getString(), is("1   2   3    \none two three\n"));
+        assertThat(column.getString(), is("1   | 2   | 3    \none | two | three\n"));
     }
 }

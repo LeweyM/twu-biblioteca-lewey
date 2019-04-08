@@ -42,31 +42,30 @@ public class Column {
     }
 
     private String pad(String string, int max) {
-        String workingString = string;
+        StringBuilder workingString = new StringBuilder(string);
         while (workingString.length() < max) {
-            workingString += " ";
+            workingString.append(" ");
         }
-        return workingString;
+        return workingString.toString();
     }
 
     public String getString() {
-        String result = "";
+        StringBuilder stringBuilder = new StringBuilder(512);
         for (List line: lines) {
-            result += getLine(line);
-
+            stringBuilder.append(getLine(line));
         }
-        return result;
+        return stringBuilder.toString();
     }
 
     private String getLine(List<String> line) {
-        String result = "";
+        StringBuilder stringBuilder = new StringBuilder();
 
         for (int colIndex = 0; colIndex < line.size(); colIndex++) {
             int colWidth = this.columnWidths.get(colIndex);
-            result += pad(line.get(colIndex), colWidth);
-            if (colIndex != line.size() - 1) result += " ";
+            stringBuilder.append(pad(line.get(colIndex), colWidth));
+            if (colIndex != line.size() - 1) stringBuilder.append(" | ");
         }
 
-        return result + "\n";
+        return stringBuilder + "\n";
     }
 }
