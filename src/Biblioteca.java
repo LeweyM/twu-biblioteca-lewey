@@ -63,7 +63,7 @@ public class Biblioteca {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 

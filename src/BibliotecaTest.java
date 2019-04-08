@@ -5,14 +5,15 @@ import org.junit.Test;
 import java.io.*;
 import java.util.Date;
 
+import static org.mockito.Mockito.*;
+
 import static org.hamcrest.CoreMatchers.is;
 
 public class BibliotecaTest {
     private BufferedReader bufferedInput;
     private ByteArrayInputStream byteArrayInputStream;
-    private MockPrinter mockPrinter;
+    private Printer mockedPrinter;
     private Biblioteca biblioteca;
-    private PrintStream outputSpy;
 
     private Book[] books;
 
@@ -25,8 +26,7 @@ public class BibliotecaTest {
 
     @Before
     public void setUp() {
-        outputSpy = new PrintStream(new ByteArrayOutputStream());
-        mockPrinter = new MockPrinter(outputSpy);
+        mockedPrinter = mock(Printer.class);
         initData();
     }
 
@@ -35,7 +35,7 @@ public class BibliotecaTest {
         byteArrayInputStream = new ByteArrayInputStream(joinedInput.getBytes());
         bufferedInput = new BufferedReader(new InputStreamReader(byteArrayInputStream));
 
-        biblioteca = new Biblioteca(bufferedInput, mockPrinter, books);
+        biblioteca = new Biblioteca(bufferedInput, mockedPrinter, books);
     }
 
     @Test
@@ -43,8 +43,7 @@ public class BibliotecaTest {
         setupInputStream("1");
         biblioteca.start();
 
-        Assert.assertThat(mockPrinter.getPrintBooksCalledCount(), is(1));
-
+        verify(mockedPrinter, times(1)).printBooks(books);
     }
 
     @Test
@@ -52,8 +51,8 @@ public class BibliotecaTest {
         setupInputStream("x");
         biblioteca.start();
 
-        Assert.assertThat(mockPrinter.getPrintInvalidInputCalledCount(), is(1));
-        Assert.assertThat(mockPrinter.getPrintMenuChoicesCalledCount(), is(2));
+        verify(mockedPrinter, times(1)).printInvalidInput();
+        verify(mockedPrinter, times(2)).printMenuChoices();
     }
 
     @Test
@@ -61,9 +60,9 @@ public class BibliotecaTest {
         setupInputStream("x", "p", "1");
         biblioteca.start();
 
-        Assert.assertThat(mockPrinter.getPrintInvalidInputCalledCount(), is(2));
-        Assert.assertThat(mockPrinter.getPrintMenuChoicesCalledCount(), is(4));
-        Assert.assertThat(mockPrinter.getPrintBooksCalledCount(), is(1));
+        verify(mockedPrinter, times(2)).printInvalidInput();
+        verify(mockedPrinter, times(4)).printMenuChoices();
+        verify(mockedPrinter, times(1)).printBooks(books);
     }
 
     @Test
@@ -81,7 +80,7 @@ public class BibliotecaTest {
         biblioteca.start();
 
         Assert.assertThat(books[2].isCheckedOut(), is(true));
-        Assert.assertThat(mockPrinter.getPrintCheckoutSuccessCalledCount(), is(1));
+        verify(mockedPrinter, times(1)).printCheckoutSuccess();
     }
 
     @Test
@@ -92,7 +91,7 @@ public class BibliotecaTest {
         biblioteca.start();
 
         Assert.assertThat(books[0].isCheckedOut(), is(true));
-        Assert.assertThat(mockPrinter.getGetBookAlreadyCheckedOutCalledCount(), is(1));
+        verify(mockedPrinter, times(1)).bookAlreadyCheckedOut(books[0]);
     }
 
     @Test
@@ -103,7 +102,7 @@ public class BibliotecaTest {
         biblioteca.start();
 
         Assert.assertThat(books[0].isCheckedOut(), is(true));
-        Assert.assertThat(mockPrinter.getGetBookAlreadyCheckedOutCalledCount(), is(1));
+        verify(mockedPrinter, times(1)).bookAlreadyCheckedOut(books[0]);
     }
 
     @Test
@@ -113,7 +112,7 @@ public class BibliotecaTest {
         biblioteca.start();
 
         Assert.assertThat(books[0].isCheckedOut(), is(false));
-        Assert.assertThat(mockPrinter.getPrintReturnBookSuccessCalledCount(), is(1));
+        verify(mockedPrinter, times(1)).printReturnBookSuccess();
     }
 }
 
