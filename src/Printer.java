@@ -1,5 +1,6 @@
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.List;
 
 public class Printer {
 
@@ -11,20 +12,19 @@ public class Printer {
 
 
     public void welcome() {
-        String welcomeString = "Welcome to Biblioteca, your one-stop-shop for great books in Bangalor!";
-        this.out.println(welcomeString);
+        this.out.println("Welcome to Biblioteca, your one-stop-shop for great books in Bangalor!");
     }
 
-    public void printBooks(Book[] books) {
+    public void printBooks(List<Book> books) {
         Column column = new Column();
         column.addLine("Title", "Author", "ID", "Year Published");
-        for (Book book : Arrays.stream(books).filter(book -> !book.isCheckedOut()).toArray(Book[]::new)) {
+        for (Book book : books) {
             column.addLine(book.getTitle(), book.getAuthor(), Integer.toString(book.getId()), book.getYearPublished());
         }
         this.out.println(column.getString());
     }
 
-    public void printMenuChoices() {
+    public void menuOptions() {
         this.out.println("Choose an option:");
         this.out.println("1: List of Books");
         this.out.println("2: Checkout a Book");
@@ -36,35 +36,38 @@ public class Printer {
         this.out.println("Enter id to checkout book:");
     }
 
-    public void printCheckoutByTitleInstructions() {
+    public void checkoutInstructions() {
         this.out.println("Enter title to checkout book:");
     }
 
-    public void printCheckoutSuccess() {
+    public void checkoutSuccess() {
         this.out.println("Thank you! Enjoy the book.");
     }
+
+    public void checkoutFailure() { this.out.print("Sorry, can't checkout that book"); }
 
     public void bookAlreadyCheckedOut(Book book) {
         this.out.println("Sorry, \"" + book.getTitle() +  "\" is not available!");
     }
 
-    public void printInvalidInput() {
+    public void invalidInput() {
         this.out.println("Please select a valid option!");
     }
 
-    public void printReturnBookSuccess() {
+    public void returnSuccess() {
         this.out.println("Thanks for returning the book!");
    }
 
-    public void printReturnByTitleInstructions() {
+    public void returnInstructions() {
         this.out.println("Enter title to return book:");
     }
 
-    public void printCannotFindBook() {
+    public void bookNotFound() {
         this.out.println("Sorry, we cannot find that book");
     }
 
-    public void printReturnBookFailure() {
+    public void returnFailure() {
         this.out.println("That is not a valid book to return");
     }
+
 }
