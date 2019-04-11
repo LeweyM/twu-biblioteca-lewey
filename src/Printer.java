@@ -66,4 +66,8 @@ public class Printer {
     public void loginFailure() { out.println("Incorrect Credentials"); }
 
     public void enterPassword() { out.println("Enter your password:"); }
+
+    public void passwordFailure() { out.println("Incorrect Password"); }
+
+    public void enterLibraryNumber() { out.println("Enter your Library Number:"); }
 }

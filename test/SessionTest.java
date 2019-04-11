@@ -156,11 +156,14 @@ public class SessionTest {
     }
 
     @Test
-    public void loginShouldLoginWithGoodPw() {
+    public void loginShouldLoginWithGoodLibNumAndPassword() {
         when(userInterface.getUserInputString())
-                .thenReturn("0001111");
-        when(userManager.getUserByPassword(any()))
+                .thenReturn("lib1111")
+                .thenReturn("password");
+        when(userManager.getUserByLibraryNumber("lib1111"))
                 .thenReturn(Optional.of(lewey));
+        when(userManager.validatePassword(lewey, "password"))
+                .thenReturn(true);
 
         session.login();
 
@@ -169,15 +172,31 @@ public class SessionTest {
     }
 
     @Test
-    public void loginShouldNotLoginWithBadPw() {
+    public void loginShouldNotLoginWithBadLibraryNumber() {
         when(userInterface.getUserInputString())
                 .thenReturn("9998888");
-        when(userManager.getUserByPassword(any()))
+        when(userManager.getUserByLibraryNumber("9998888"))
                 .thenReturn(Optional.empty());
 
         session.login();
 
         Assert.assertFalse(session.isUserLoggedIn());
         verify(printer).loginFailure();
+    }
+
+    @Test
+    public void loginShouldNotLoginWithBadPw() {
+        when(userInterface.getUserInputString())
+                .thenReturn("9998888")
+                .thenReturn("badPassword");
+        when(userManager.getUserByLibraryNumber("9998888"))
+                .thenReturn(Optional.of(lewey));
+        when(userManager.validatePassword(lewey, "badPassword"))
+                .thenReturn(false);
+
+        session.login();
+
+        Assert.assertFalse(session.isUserLoggedIn());
+        verify(printer).passwordFailure();
     }
 }

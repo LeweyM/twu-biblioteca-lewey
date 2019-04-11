@@ -1,5 +1,3 @@
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
-
 import java.util.Optional;
 
 public class Session {
@@ -29,30 +27,25 @@ public class Session {
             login();
         }
         while (isAppRunning) {
-                printer.menuOptions(mainMenu.getMenuItems());
-                ICommand cmd = getMainMenuCommand();
-                cmd.execute();
-            }
+            printer.menuOptions(mainMenu.getMenuItems());
+            ICommand cmd = getMainMenuCommand();
+            cmd.execute();
+        }
     }
 
     public void login() {
-        printer.enterPassword();
-        String password = userInterface.getUserInputString();
-        Optional<User> userOptional = userManager.getUserByPassword(password);
+        printer.enterLibraryNumber();
+        Optional<User> userOptional = userManager.getUserByLibraryNumber(userInterface.getUserInputString());
         if (userOptional.isPresent()) {
-            userLoggedIn = true;
-            user = userOptional.get();
-            printer.loginSuccess();
+            printer.enterPassword();
+            String password = userInterface.getUserInputString();
+            processLoginWithPassword(userOptional.get(), password);
         } else {
             userLoggedIn = false;
             printer.loginFailure();
         }
+
     }
-
-    private ICommand getMainMenuCommand() {
-        return mainMenu.getCommand(userInterface.getUserInputString());
-    };
-
 
     public void checkoutItem() {
         Class itemType = getItemTypeCommand().result();
@@ -83,6 +76,22 @@ public class Session {
         printer.quitMessage();
         this.isAppRunning = false;
     }
+
+    private void processLoginWithPassword(User user, String password) {
+        if (userManager.validatePassword(user, password)) {
+            userLoggedIn = true;
+            this.user = user;
+            printer.loginSuccess();
+        } else {
+            userLoggedIn = false;
+            printer.passwordFailure();
+        }
+        ;
+    }
+
+    private ICommand getMainMenuCommand() {
+        return mainMenu.getCommand(userInterface.getUserInputString());
+    };
 
     private ICommand<Class> getItemTypeCommand() {
         printer.menuOptions(menuType.getMenuItems());

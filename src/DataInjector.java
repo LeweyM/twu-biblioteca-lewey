@@ -5,6 +5,7 @@ import java.util.List;
 public class DataInjector {
 
     List<LibraryItem> items = new ArrayList<>();
+    List<User> users = new ArrayList<>();
 
     Movie lordOfTheRingsMovie = new Movie(0, "Lord of the Rings", "Tolkien", new Date(), 4);
     Movie amelieMovie = new Movie(8, "Amelie", "Bonjour", new Date(), 8);
@@ -12,14 +13,12 @@ public class DataInjector {
     Book bambieBook = new Book(1, "Bambi", "Disney", new Date());
     Book hamletBook = new Book(2, "Hamlet", "Shakespeare", new Date());
 
-    User lewey = new User("Lewey", "1114444");
-    User pau = new User("Pau", "9995555");
+    User lewey = new User("1114444", "password", "lewey", "lewey@mail", "012321322");
+    User pau = new User("1115555", "safePass", "pau", "pau1@gmail.com", "804808042");
 
     public List<User> getUsers() {
         return users;
     }
-
-    List<User> users = new ArrayList<>();
 
     public DataInjector() {
         items.add(lordOfTheRingsMovie);
@@ -30,7 +29,6 @@ public class DataInjector {
 
         users.add(lewey);
         users.add(pau);
-
     }
 
     public Movie getLordOfTheRingsMovie() {
