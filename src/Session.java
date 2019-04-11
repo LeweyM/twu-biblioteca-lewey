@@ -1,88 +1,107 @@
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Optional;
 
 public class Session {
 
     private final Biblioteca biblioteca;
-    private boolean isAppRunning;
-    private Printer printer;
-    private UserInterface userInterface;
+    private final Printer printer;
+    private final UserInterface userInterface;
+    private boolean isAppRunning = true;
+    private final HashMap<Class, String[]> headers = new HashMap<>();
+
+    private final Menu mainMenu = new MenuMain(this);
+    private final Menu menuType = new MenuType(this);
 
     public Session(Biblioteca biblioteca, Printer printer, UserInterface userInterface) {
         this.biblioteca = biblioteca;
         this.printer = printer;
         this.userInterface = userInterface;
+        headers.put(Book.class, new String[]{"Title", "Author", "Date Published"});
+        headers.put(Movie.class, new String[]{"Title", "Director", "Date Published"});
     }
 
     public void start() {
-            isAppRunning = true;
-            printer.welcome();
-            printer.menuOptions();
-            try {
-                String userInput = userInterface.getUserInputString();
-                while (isAppRunning) {
-                    switch (userInput) {
-                        case "1":
-                            printer.printBooks(biblioteca.getAvailableBooks());
-                            break;
-                        case "2":
-                            checkoutBook();
-                            break;
-                        case "3":
-                            returnBook();
-                            break;
-                        case "q":
-                            isAppRunning = false;
-                            return;
-                        default:
-                            printer.invalidInput();
-                    }
-                    printer.menuOptions();
-                    userInput = userInterface.getUserInputString();
-                }
-
-            } catch (IOException e) {
-//            e.printStackTrace();
+        printer.welcome();
+        while (isAppRunning) {
+                printer.menuOptions(mainMenu.getMenuItems());
+                ICommand cmd = getMainMenuCommand();
+                cmd.execute();
             }
     }
 
-    private void returnBook() throws IOException {
-        printer.returnInstructions();
-        Optional<Book> bookOptional = findBookByTitle();
-        if (bookOptional.isPresent()) {
-            attemptReturnBook(bookOptional);
+    private ICommand getMainMenuCommand() {
+        return mainMenu.getCommand(userInterface.getUserInputString());
+    };
+
+
+    public void checkoutItem() {
+        Class itemType = (Class)getItemTypeCommand().result();
+        if (itemType != null) {
+            printer.checkoutInstructions();
+            Optional<LibraryItem> item = biblioteca.findByTitleAndType(userInterface.getUserInputString(), itemType);
+            if (libraryHasItem(item)) attemptCheckout(item.get());
+        };
+    }
+
+    public void returnItem() {
+        Class itemType = (Class)getItemTypeCommand().result();
+        if (itemType != null) {
+            printer.returnInstructions();
+            Optional<LibraryItem> item = biblioteca.findByTitleAndType(userInterface.getUserInputString(), itemType);
+            if (libraryHasItem(item)) attemptReturn(item.get());
+        };
+    }
+
+    public void listItems() {
+        Class itemType = (Class)getItemTypeCommand().result();
+        if (itemType != null) {
+            printer.printItems(biblioteca.getAvailableItemsByType(itemType), headers.get(itemType));
+        };
+    }
+
+    public void quit() {
+        printer.quitMessage();
+        this.isAppRunning = false;
+    }
+
+    public boolean isAppRunning() {
+        return isAppRunning;
+    }
+
+    private ICommand getItemTypeCommand() {
+        printer.menuOptions(menuType.getMenuItems());
+        ICommand<Class> command = menuType.getCommand(userInterface.getUserInputString());
+        command.execute();
+        return command;
+    }
+
+    private void attemptCheckout(LibraryItem item) {
+        if (biblioteca.checkoutItem(item)) {
+            printer.checkoutSuccess();
+        } else {
+            printer.checkoutFailure();
         }
     }
 
-    private void attemptReturnBook(Optional<Book> bookOptional) {
-        boolean success = biblioteca.returnBook(bookOptional.get());
-        if (success) {
+    private void attemptReturn(LibraryItem item) {
+        if (biblioteca.returnItem(item)) {
             printer.returnSuccess();
         } else {
             printer.returnFailure();
         }
     }
 
-    private Optional<Book> findBookByTitle() throws IOException {
-        Optional<Book> bookOptional = biblioteca.findBookByTitle(userInterface.getUserInputString());
-
-        if (!bookOptional.isPresent()) {
-            printer.bookNotFound();
-        }
-        return bookOptional;
-    }
-
-    private void checkoutBook() throws IOException {
-        printer.checkoutInstructions();
-        Optional<Book> bookOptional = findBookByTitle();
-        if (bookOptional.isPresent()) {
-            if (biblioteca.checkout(bookOptional.get())) {
-                printer.checkoutSuccess();
-            } else {
-                printer.checkoutFailure();
-            }
+    private boolean libraryHasItem(Optional<LibraryItem> item) {
+        if (item.isPresent()) {
+            return true;
+        } else {
+            printer.itemNotFound();
+            return false;
         }
     }
 
+    public void invalidInput() {
+        printer.invalidInput();
+    }
 }
 

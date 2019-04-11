@@ -1,50 +1,21 @@
 import java.util.Date;
 
-public class Book {
+public class Book extends LibraryItem implements IColumnPrintable {
 
-    private int id;
-    private String title;
     private String author;
-    private Date datePublished;
-    private boolean isCheckedOut = false;
 
-    public int getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
+    public Book(int id, String title, String author, Date datePublished) {
+        super(id, title, datePublished);
+        this.author = author;
     }
 
     public String getAuthor() {
         return author;
     }
 
-    public Date getDatePublished() {
-        return datePublished;
+    @Override
+    public void addColumnLine(Column column) {
+        column.addLine(super.getTitle(), getAuthor(), super.getYearPublished());
     }
 
-    public String getYearPublished() {
-        String dateString = datePublished.toString();
-        return dateString.substring(dateString.length() - 4);
-    }
-
-    public Book(String title, int id, String author, Date datePublished) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.datePublished = datePublished;
-    }
-
-    public void checkout() {
-        this.isCheckedOut = true;
-    }
-
-    public boolean isCheckedOut() {
-        return isCheckedOut;
-    }
-
-    public void returnBook() {
-        this.isCheckedOut = false;
-    }
 }

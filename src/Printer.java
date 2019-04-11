@@ -15,36 +15,31 @@ public class Printer {
         this.out.println("Welcome to Biblioteca, your one-stop-shop for great books in Bangalor!");
     }
 
-    public void printBooks(List<Book> books) {
+    public void printItems(List<LibraryItem> items, String... headers) {
         Column column = new Column();
-        column.addLine("Title", "Author", "ID", "Year Published");
-        for (Book book : books) {
-            column.addLine(book.getTitle(), book.getAuthor(), Integer.toString(book.getId()), book.getYearPublished());
+        column.addLine(headers);
+        for (LibraryItem item : items) {
+            item.addColumnLine(column);
         }
         this.out.println(column.getString());
     }
 
-    public void menuOptions() {
+    public void menuOptions(List<MenuItem> menuItems) {
         this.out.println("Choose an option:");
-        this.out.println("1: List of Books");
-        this.out.println("2: Checkout a Book");
-        this.out.println("3: Return a Book");
-        this.out.println("Q: Quit");
-    }
-
-    public void printCheckoutByIdInstructions() {
-        this.out.println("Enter id to checkout book:");
+        for (MenuItem menuItem : menuItems) {
+            this.out.println(menuItem.getKey() + ": " + menuItem.getLabel());
+        }
     }
 
     public void checkoutInstructions() {
-        this.out.println("Enter title to checkout book:");
+        this.out.println("Enter title to checkoutItem item:");
     }
 
     public void checkoutSuccess() {
         this.out.println("Thank you! Enjoy the book.");
     }
 
-    public void checkoutFailure() { this.out.print("Sorry, can't checkout that book"); }
+    public void checkoutFailure() { this.out.print("Sorry, can't checkoutItem that book"); }
 
     public void bookAlreadyCheckedOut(Book book) {
         this.out.println("Sorry, \"" + book.getTitle() +  "\" is not available!");
@@ -58,16 +53,12 @@ public class Printer {
         this.out.println("Thanks for returning the book!");
    }
 
-    public void returnInstructions() {
-        this.out.println("Enter title to return book:");
-    }
+    public void returnFailure() { this.out.println("That is not a valid book to return"); }
 
-    public void bookNotFound() {
-        this.out.println("Sorry, we cannot find that book");
-    }
+    public void returnInstructions() { this.out.println("Enter title to return book:"); }
 
-    public void returnFailure() {
-        this.out.println("That is not a valid book to return");
-    }
+    public void itemNotFound() { this.out.println("Sorry, we cannot find that item"); }
+
+    public void quitMessage() { this.out.print("Thanks for using the biblioteca!"); }
 
 }

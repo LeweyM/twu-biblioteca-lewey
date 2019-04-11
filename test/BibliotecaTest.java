@@ -2,107 +2,160 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.mock;
 
 public class BibliotecaTest {
 
-    private Book[] books;
     private Biblioteca biblioteca;
+    Movie lordOfTheRingsMovie = new Movie(0, "Lord of the Rings", "Tolkien", new Date());
+    Movie amelieMovie = new Movie(8, "Amelie", "Bonjour", new Date());
+    Book lordOfTheRingsBook = new Book(0, "Lord of the Rings", "Tolkien", new Date());
+    Book bambieBook = new Book(1, "Bambi", "Disney", new Date());
+    Book hamletBook = new Book(2, "Hamlet", "Shakespeare", new Date());
 
-    private void initData() {
-        books = new Book[3];
-        books[0] = new Book("Lord of the Rings", 0, "Tolkien", new Date());
-        books[1] = new Book("Bambi", 1, "Disney", new Date());
-        books[2] = new Book("Hamlet", 2, "Shakespeare", new Date());
+    private List<LibraryItem> getBooks() {
+        List<LibraryItem> books;
+        books = new ArrayList<>();
+        books.add(lordOfTheRingsBook);
+        books.add(bambieBook);
+        books.add(hamletBook);
+        return books;
+    }
+
+    private List<LibraryItem> getMovies() {
+        List<LibraryItem> movies;
+        movies = new ArrayList<>();
+        movies.add(lordOfTheRingsMovie);
+        movies.add(amelieMovie);
+        return movies;
     }
 
     @Before
     public void setUp() {
-        initData();
+    }
+
+    @Test
+    public void shouldCheckoutBook() {
+        List<LibraryItem> books = getBooks();
         biblioteca = new Biblioteca(books);
+
+        boolean checkout = biblioteca.checkoutItem(lordOfTheRingsBook);
+
+        Assert.assertTrue(checkout);
+        Assert.assertTrue(biblioteca.getItemsCheckedOut().contains(lordOfTheRingsBook));
     }
 
     @Test
-    public void shouldFindBookByTitle() {
-        Optional<Book> bookByTitle = biblioteca.findBookByTitle(books[0].getTitle());
-        Assert.assertThat(bookByTitle.get(), is(books[0]));
+    public void shouldReturnCheckedOutBook() {
+        List<LibraryItem> books = getBooks();
+        biblioteca = new Biblioteca(books);
+        biblioteca.checkoutItem(lordOfTheRingsBook);
+
+        boolean hasReturned = biblioteca.returnItem(lordOfTheRingsBook);
+
+        Assert.assertTrue(hasReturned);
     }
 
     @Test
-    public void shouldFindByTitleCaseInsensitve() {
-        Optional<Book> bookByTitle = biblioteca.findBookByTitle(books[0].getTitle().toUpperCase());
-        Assert.assertThat(bookByTitle.get(), is(books[0]));
+    public void shouldNotReturnBookIfAvailable() {
+        List<LibraryItem> books = getBooks();
+        biblioteca = new Biblioteca(books);
+
+        boolean hasReturned = biblioteca.returnItem(lordOfTheRingsBook);
+
+        Assert.assertFalse(hasReturned);
     }
 
     @Test
-    public void findBookShouldReturnEmptyOptionalIfCannotFind() {
-        Optional<Book> bookByTitle = biblioteca.findBookByTitle("some-bad-title");
-        Assert.assertThat(bookByTitle.isPresent(), is(false));
+    public void shouldNotCheckoutWhenBookDoesNotExist() {
+        biblioteca = new Biblioteca(getBooks());
+
+        LibraryItem harryPotter = new Book(1, "Harry Potter", "Rowling", new Date());
+        boolean checkout = biblioteca.checkoutItem(harryPotter);
+
+        Assert.assertFalse(checkout);
+        Assert.assertFalse(biblioteca.getItemsCheckedOut().contains(harryPotter));
     }
 
     @Test
-    public void checkoutShouldReturnTrueIfSuccessful() {
-        boolean checkedOutSuccessfully = biblioteca.checkout(books[0]);
+    public void shouldGetAllBooks() {
+        List<LibraryItem> items = getBooks();
+        items.addAll(getMovies());
+        biblioteca = new Biblioteca(items);
 
-        Assert.assertTrue(checkedOutSuccessfully);
-    }
+        List<LibraryItem> books = biblioteca.getAvailableItemsByType(Book.class);
 
-    @Test(expected = NullPointerException.class)
-    public void checkoutShouldReturnExceptionIfBookNotFound() {
-        Book bookNotInList = new Book("testTitle", 99, "testAuthor", new Date());
-        biblioteca.checkout(bookNotInList);
-    }
-
-    @Test
-    public void checkoutShouldReturnFalseIfBookAlreadyCheckedOut() {
-        biblioteca.checkout(books[0]);
-        boolean checkedOutSuccessfully = biblioteca.checkout(books[0]);
-
-        Assert.assertFalse(checkedOutSuccessfully);
+        Assert.assertTrue(books.contains(hamletBook));
+        Assert.assertTrue(books.contains(bambieBook));
+        Assert.assertTrue(books.contains(lordOfTheRingsBook));
+        Assert.assertFalse(books.contains(lordOfTheRingsMovie));
+        Assert.assertFalse(books.contains(amelieMovie));
     }
 
     @Test
-    public void isCheckedOutShouldReturnTrue() {
-        biblioteca.checkout(books[0]);
-        boolean isCheckedOut = biblioteca.isCheckedOut(books[0]);
+    public void shouldGetAllMovies() {
+        List<LibraryItem> items = getBooks();
+        items.addAll(getMovies());
+        biblioteca = new Biblioteca(items);
 
-        Assert.assertTrue(isCheckedOut);
+        List<LibraryItem> movies = biblioteca.getAvailableItemsByType(Movie.class);
+
+        Assert.assertTrue(movies.contains(amelieMovie));
+        Assert.assertTrue(movies.contains(lordOfTheRingsMovie));
+        Assert.assertFalse(movies.contains(lordOfTheRingsBook));
     }
 
     @Test
-    public void isCheckedOutShouldReturnFalse() {
-        boolean isCheckedOut = biblioteca.isCheckedOut(books[0]);
+    public void shouldGetAllAvailableMovies() {
+        List<LibraryItem> items = getBooks();
+        items.addAll(getMovies());
+        biblioteca = new Biblioteca(items);
 
-        Assert.assertFalse(isCheckedOut);
+        biblioteca.checkoutItem(amelieMovie);
+        List<LibraryItem> movies = biblioteca.getAvailableItemsByType(Movie.class);
+
+        Assert.assertFalse(movies.contains(amelieMovie));
+        Assert.assertTrue(movies.contains(lordOfTheRingsMovie));
+        Assert.assertFalse(movies.contains(lordOfTheRingsBook));
     }
 
     @Test
-    public void getAvailableBooksShouldReturnListOfNonCheckedOutBooks() {
-        biblioteca.checkout(books[0]);
-        List<Book> availableBooks = biblioteca.getAvailableBooks();
+    public void shouldFindABookByTitle() {
+        List<LibraryItem> items = getBooks();
+        biblioteca = new Biblioteca(items);
 
-        Assert.assertTrue(availableBooks.contains(books[1]));
-        Assert.assertTrue(availableBooks.contains(books[2]));
-        Assert.assertFalse(availableBooks.contains(books[0]));
+        Optional<LibraryItem> foundItem = biblioteca.findByTitleAndType("bambi", Book.class);
+
+        Assert.assertTrue(foundItem.isPresent());
+        Assert.assertThat(foundItem.get(), is(bambieBook));
     }
 
     @Test
-    public void returnBookShouldReturnTrueForCheckedOutBook() {
-        biblioteca.checkout(books[0]);
-        boolean returnBookSuccess = biblioteca.returnBook(books[0]);
+    public void shouldBeEmptyIfNotFound() {
+        List<LibraryItem> items = getBooks();
+        biblioteca = new Biblioteca(items);
 
-        Assert.assertTrue(returnBookSuccess);
+        Optional<LibraryItem> foundItem = biblioteca.findByTitleAndType("bambi", Movie.class);
+
+        Assert.assertFalse(foundItem.isPresent());
     }
 
     @Test
-    public void returnBookShouldReturnFalseForNotCheckedOutBook() {
-        boolean returnBookSuccess = biblioteca.returnBook(books[0]);
+    public void shouldFindMovieByTitle() {
+        List<LibraryItem> items = getBooks();
+        items.addAll(getMovies());
+        biblioteca = new Biblioteca(items);
 
-        Assert.assertFalse(returnBookSuccess);
+        Optional<LibraryItem> foundItem = biblioteca.findByTitleAndType("lord of the rings", Movie.class);
+
+        Assert.assertTrue(foundItem.isPresent());
+        Assert.assertThat(foundItem.get(), is(lordOfTheRingsMovie));
     }
 }
 

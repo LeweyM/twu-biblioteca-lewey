@@ -9,9 +9,13 @@ public class UserInterface {
         this.bufferedReader = bufferedReader;
     }
 
-    public String getUserInputString() throws IOException {
-        String inputString = bufferedReader.readLine();
-        if (inputString == null) throw new IOException("needs an input");
-        return inputString;
+    public String getUserInputString()  {
+        try {
+            return bufferedReader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
 }

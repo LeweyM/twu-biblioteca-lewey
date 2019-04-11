@@ -18,7 +18,6 @@ public class Column {
     }
 
     public void addLine(String... strings) {
-
         for (int colIndex = 0; colIndex < strings.length; colIndex++) {
             adjustColumnTotals(colIndex);
             adjustColumnSize(colIndex, strings[colIndex]);
