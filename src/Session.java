@@ -1,4 +1,5 @@
-import java.util.HashMap;
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
+
 import java.util.Optional;
 
 public class Session {
@@ -6,27 +7,46 @@ public class Session {
     private final Biblioteca biblioteca;
     private final Printer printer;
     private final UserInterface userInterface;
-    private boolean isAppRunning = true;
-    private final HashMap<Class, String[]> headers = new HashMap<>();
+    private UserManager userManager;
 
     private final Menu mainMenu = new MenuMain(this);
     private final Menu menuType = new MenuType(this);
 
-    public Session(Biblioteca biblioteca, Printer printer, UserInterface userInterface) {
+    private boolean isAppRunning = true;
+    private boolean userLoggedIn = false;
+    private User user;
+
+    public Session(Biblioteca biblioteca, Printer printer, UserInterface userInterface, UserManager userManager) {
         this.biblioteca = biblioteca;
         this.printer = printer;
         this.userInterface = userInterface;
-        headers.put(Book.class, new String[]{"Title", "Author", "Date Published"});
-        headers.put(Movie.class, new String[]{"Title", "Director", "Date Published"});
+        this.userManager = userManager;
     }
 
     public void start() {
         printer.welcome();
+        while (!userLoggedIn) {
+            login();
+        }
         while (isAppRunning) {
                 printer.menuOptions(mainMenu.getMenuItems());
                 ICommand cmd = getMainMenuCommand();
                 cmd.execute();
             }
+    }
+
+    public void login() {
+        printer.enterPassword();
+        String password = userInterface.getUserInputString();
+        Optional<User> userOptional = userManager.getUserByPassword(password);
+        if (userOptional.isPresent()) {
+            userLoggedIn = true;
+            user = userOptional.get();
+            printer.loginSuccess();
+        } else {
+            userLoggedIn = false;
+            printer.loginFailure();
+        }
     }
 
     private ICommand getMainMenuCommand() {
@@ -35,7 +55,7 @@ public class Session {
 
 
     public void checkoutItem() {
-        Class itemType = (Class)getItemTypeCommand().result();
+        Class itemType = getItemTypeCommand().result();
         if (itemType != null) {
             printer.checkoutInstructions();
             Optional<LibraryItem> item = biblioteca.findByTitleAndType(userInterface.getUserInputString(), itemType);
@@ -44,7 +64,7 @@ public class Session {
     }
 
     public void returnItem() {
-        Class itemType = (Class)getItemTypeCommand().result();
+        Class itemType = getItemTypeCommand().result();
         if (itemType != null) {
             printer.returnInstructions();
             Optional<LibraryItem> item = biblioteca.findByTitleAndType(userInterface.getUserInputString(), itemType);
@@ -53,9 +73,9 @@ public class Session {
     }
 
     public void listItems() {
-        Class itemType = (Class)getItemTypeCommand().result();
+        Class itemType = getItemTypeCommand().result();
         if (itemType != null) {
-            printer.printItems(biblioteca.getAvailableItemsByType(itemType), headers.get(itemType));
+            printer.printItems(biblioteca.getAvailableItemsByType(itemType), biblioteca.getHeader(itemType));
         };
     }
 
@@ -64,11 +84,7 @@ public class Session {
         this.isAppRunning = false;
     }
 
-    public boolean isAppRunning() {
-        return isAppRunning;
-    }
-
-    private ICommand getItemTypeCommand() {
+    private ICommand<Class> getItemTypeCommand() {
         printer.menuOptions(menuType.getMenuItems());
         ICommand<Class> command = menuType.getCommand(userInterface.getUserInputString());
         command.execute();
@@ -103,5 +119,14 @@ public class Session {
     public void invalidInput() {
         printer.invalidInput();
     }
+
+    public boolean isAppRunning() {
+        return isAppRunning;
+    }
+
+    public boolean isUserLoggedIn() {
+        return userLoggedIn;
+    }
+
 }
 

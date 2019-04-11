@@ -8,16 +8,20 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.Mockito.mock;
 
 public class BibliotecaTest {
 
     private Biblioteca biblioteca;
-    Movie lordOfTheRingsMovie = new Movie(0, "Lord of the Rings", "Tolkien", new Date());
-    Movie amelieMovie = new Movie(8, "Amelie", "Bonjour", new Date());
-    Book lordOfTheRingsBook = new Book(0, "Lord of the Rings", "Tolkien", new Date());
-    Book bambieBook = new Book(1, "Bambi", "Disney", new Date());
-    Book hamletBook = new Book(2, "Hamlet", "Shakespeare", new Date());
+    private DataInjector dataInjector = new DataInjector();
+    Movie lordOfTheRingsMovie = dataInjector.getLordOfTheRingsMovie();
+    Movie amelieMovie = dataInjector.getAmelieMovie();
+    Book lordOfTheRingsBook = dataInjector.getLordOfTheRingsBook();
+    Book bambieBook = dataInjector.getBambieBook();
+    Book hamletBook = dataInjector.getHamletBook();
+    User lewey = dataInjector.getLewey();
+    User pau = dataInjector.getPau();
+    List<User> users = dataInjector.getUsers();
+    List<LibraryItem> items = dataInjector.getItems();
 
     private List<LibraryItem> getBooks() {
         List<LibraryItem> books;

@@ -1,137 +1,183 @@
+import com.sun.tools.javac.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
+import java.util.Optional;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class SessionTest {
 
     private UserInterface userInterface;
+    private UserManager userManager;
     private Biblioteca biblioteca;
     private Printer printer;
     private Session session;
+
+    private DataInjector dataInjector = new DataInjector();
+    Movie lordOfTheRingsMovie = dataInjector.getLordOfTheRingsMovie();
+    Movie amelie = dataInjector.getAmelieMovie();
+    Book lordOfTheRingsBook = dataInjector.getLordOfTheRingsBook();
+    Book bambie = dataInjector.getBambieBook();
+    Book hamlet = dataInjector.getHamletBook();
+    User lewey = dataInjector.getLewey();
+    User pau = dataInjector.getPau();
+    java.util.List<User> users = dataInjector.getUsers();
+    java.util.List<LibraryItem> items = dataInjector.getItems();
 
     @Before
     public void setUp() {
         userInterface = mock(UserInterface.class);
         printer = mock(Printer.class);
         biblioteca = mock(Biblioteca.class);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void shouldCallWelcome() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
-
-        session.start();
-
-        verify(printer).welcome();
+        userManager = mock(UserManager.class);
+        session = new Session(biblioteca, printer, userInterface, userManager);
     }
 
     @Test
-    public void shouldQuitWithQuitCommand() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
-        Mockito.when(userInterface.getUserInputString())
-                .thenReturn("q")
-                .thenReturn(null);
+    public void shouldQuitWithQuitCommand() {
 
-        session.start();
+        session.quit();
 
+        verify(printer).quitMessage();
         Assert.assertFalse(session.isAppRunning());
     }
 
-    @Test(expected = NullPointerException.class)
-    public void shouldPrintItemsWithListItemsCommand() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
+    @Test
+    public void shouldPrintListItems() {
+        String[] headers = {"Title", "Author", "Date Published"};
         Mockito.when(userInterface.getUserInputString())
-                .thenReturn("1")
-                .thenReturn(null);
+                .thenReturn("b");
+        Mockito.when(biblioteca.getAvailableItemsByType(Book.class))
+                .thenReturn(List.of(hamlet));
+        Mockito.when(biblioteca.getHeader(Book.class))
+                .thenReturn(headers);
 
-        session.start();
+        session.listItems();
 
-        verify(printer).printItems(any());
+        verify(printer).printItems(List.of(hamlet), headers);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void callsCheckoutSuccess() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
+    @Test
+    public void callsCheckoutSuccess() {
         when(userInterface.getUserInputString())
-                .thenReturn("3")
-                .thenReturn("hamlet")
-                .thenReturn(null);
-        when(biblioteca.checkoutItem(any()))
+                .thenReturn("b")
+                .thenReturn("hamlet");
+        when(biblioteca.findByTitleAndType("hamlet" ,Book.class))
+                .thenReturn(Optional.of(hamlet));
+        when(biblioteca.checkoutItem(hamlet))
                 .thenReturn(true);
 
-        session.start();
+        session.checkoutItem();
 
+        verify(printer).checkoutInstructions();
         verify(printer).checkoutSuccess();
     }
 
-    @Test(expected = NullPointerException.class)
-    public void callsCheckoutFailure() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
+    @Test
+    public void callsCheckoutFailure() {
         when(userInterface.getUserInputString())
-                .thenReturn("3")
-                .thenReturn("hamlet")
-                .thenReturn(null);
-        when(biblioteca.checkoutItem(any()))
+                .thenReturn("b")
+                .thenReturn("hamlet");
+        when(biblioteca.findByTitleAndType("hamlet", Book.class))
+                .thenReturn(Optional.of(hamlet));
+        when(biblioteca.checkoutItem(hamlet))
                 .thenReturn(false);
 
-        session.start();
+        session.checkoutItem();
 
+        verify(printer).checkoutInstructions();
         verify(printer).checkoutFailure();
     }
 
-
-    @Test(expected = NullPointerException.class)
-    public void callsCheckoutSuccessForMovie() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
+    @Test
+    public void callsBookNotFound() {
         when(userInterface.getUserInputString())
-                .thenReturn("4")
-                .thenReturn("amelie")
-                .thenReturn(null);
-        when(biblioteca.checkoutItem(any()))
+                .thenReturn("b")
+                .thenReturn("hamlet");
+        when(biblioteca.findByTitleAndType("hamlet", Book.class))
+                .thenReturn(Optional.empty());
+
+        session.checkoutItem();
+
+        verify(printer).checkoutInstructions();
+        verify(printer).itemNotFound();
+    }
+
+
+    @Test
+    public void callsCheckoutSuccessForMovie()  {
+        when(userInterface.getUserInputString())
+                .thenReturn("m")
+                .thenReturn("amelie");
+        when(biblioteca.findByTitleAndType("amelie", Movie.class))
+                .thenReturn(Optional.of(amelie));
+        when(biblioteca.checkoutItem(amelie))
                 .thenReturn(true);
 
-        session.start();
+        session.checkoutItem();
 
+        verify(printer).checkoutInstructions();
         verify(printer).checkoutSuccess();
     }
 
-
-    @Test(expected = NullPointerException.class)
-    public void callsReturnSuccess() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
+    @Test
+    public void callsReturnSuccess() {
         when(userInterface.getUserInputString())
-                .thenReturn("5")
-                .thenReturn(("hamlet"))
-                .thenReturn(null);
-        when(biblioteca.returnItem(any()))
+                .thenReturn("b")
+                .thenReturn(("hamlet"));
+        when(biblioteca.findByTitleAndType("hamlet", Book.class))
+                .thenReturn(Optional.of(hamlet));
+        when(biblioteca.returnItem(hamlet))
                 .thenReturn(true);
 
-        session.start();
+        session.returnItem();
 
+        verify(printer).returnInstructions();
         verify(printer).returnSuccess();
     }
 
-    @Test(expected = NullPointerException.class)
-    public void callsReturnFailure() throws IOException {
-        session = new Session(biblioteca, printer, userInterface);
+    @Test
+    public void callsReturnFailure() {
         when(userInterface.getUserInputString())
-                .thenReturn("5")
-                .thenReturn(("hamlet"))
-                .thenReturn(null);
-        when(biblioteca.returnItem(any()))
+                .thenReturn("b")
+                .thenReturn(("hamlet"));
+        when(biblioteca.findByTitleAndType("hamlet", Book.class))
+                .thenReturn(Optional.of(hamlet));
+        when(biblioteca.returnItem(hamlet))
                 .thenReturn(false);
 
-        session.start();
+        session.returnItem();
 
+        verify(printer).returnInstructions();
         verify(printer).returnFailure();
     }
 
+    @Test
+    public void loginShouldLoginWithGoodPw() {
+        when(userInterface.getUserInputString())
+                .thenReturn("0001111");
+        when(userManager.getUserByPassword(any()))
+                .thenReturn(Optional.of(lewey));
 
+        session.login();
 
+        Assert.assertTrue(session.isUserLoggedIn());
+        verify(printer).loginSuccess();
+    }
+
+    @Test
+    public void loginShouldNotLoginWithBadPw() {
+        when(userInterface.getUserInputString())
+                .thenReturn("9998888");
+        when(userManager.getUserByPassword(any()))
+                .thenReturn(Optional.empty());
+
+        session.login();
+
+        Assert.assertFalse(session.isUserLoggedIn());
+        verify(printer).loginFailure();
+    }
 }

@@ -1,6 +1,6 @@
 public interface ICommand<T> {
 
-    public void execute();
+    void execute();
 
-    public T result();
+    T result();
 }

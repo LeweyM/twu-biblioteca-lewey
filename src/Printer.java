@@ -59,6 +59,11 @@ public class Printer {
 
     public void itemNotFound() { this.out.println("Sorry, we cannot find that item"); }
 
-    public void quitMessage() { this.out.print("Thanks for using the biblioteca!"); }
+    public void quitMessage() { this.out.println("Thanks for using the biblioteca!"); }
 
+    public void loginSuccess() { out.println("Login Successful!"); }
+
+    public void loginFailure() { out.println("Incorrect Credentials"); }
+
+    public void enterPassword() { out.println("Enter your password:"); }
 }

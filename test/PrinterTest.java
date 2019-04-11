@@ -22,8 +22,8 @@ public class PrinterTest {
     Book lotrBook = new Book(0, "Lord of the Rings", "Tolkien", new Date());
     Book bambieBook = new Book(1, "Bambi", "Disney", new Date());
     Book hamletBook = new Book(2, "Hamlet", "Shakespear", new Date());
-    Movie amelieMovie = new Movie(8, "Amelie", "Bonjour", new Date());
-    Movie lotrMovie = new Movie(9, "Lord of the Rings", "Tolkien", new Date());
+    Movie amelieMovie = new Movie(8, "Amelie", "Bonjour", new Date(), 4);
+    Movie lotrMovie = new Movie(9, "Lord of the Rings", "Tolkien", new Date(), 8);
 
     @Before
     public void setUp() {
